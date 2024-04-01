@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Insert 문 생성기</title>
+    <style>
+        textarea {
+            width: 400px; /* 텍스트 영역 너비 설정 */
+            height: 200px; /* 텍스트 영역 높이 설정 */
+        }
+        #layoutInput, #clearButton, button {
+            margin: 10px 0; /* 상하 여백 추가 */
+        }
+    </style>
+<script>
+function generateInsertStatements() {
+    var inputText = document.getElementById('inputData').value;
+    var outputArea = document.getElementById('outputData');
+    var lines = inputText.trim().split('\n');
+    var output = '';
+
+    lines.forEach(function(line) {
+        var columns = line.split(',');
+        var layoutId = columns[0].trim();
+        var layoutNm = columns[1].trim();
+        var rm = columns[2].trim();
+        
+        var insertStatement = `INSERT INTO TIT_LAYOUT_MSTR (layout_id, layout_nm, layout_ver, sc_layout_id, sc_layout_ver, rm, delete_at, last_stre_ennc, regist_dt, register_id, modf_dt, modfer_id)
+        VALUES ('${layoutId}', '${layoutNm}', '1', '', '', '${rm}', 'N', 'Y', CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin');\n`;
+
+        output += insertStatement;
+    });
+
+    outputArea.value = output;
+}
+</script>
+</head>
+<body>
+<h2>CSV 데이터 입력</h2>
+<textarea id="inputData" rows="10" cols="50">
+LAY_000008, 강우량, 강우량 테이블에 대한 레이아웃
+LAY_000009, 수위, 수위 테이블에 대한 레이아웃
+</textarea>
+<br>
+<button onclick="generateInsertStatements()">Insert 문 생성</button>
+<h2>생성된 Insert 문</h2>
+<textarea id="outputData" style="width:100%;" rows="10" cols="50"></textarea>
+</body>
+</html>
