@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DDL to INSERT Converter with Sample DDL as Default</title>
+    <style>
+        textarea {
+            width: 400px; /* 텍스트 영역 너비 설정 */
+            height: 200px; /* 텍스트 영역 높이 설정 */
+        }
+        #layoutInput, #clearButton, button {
+            margin: 10px 0; /* 상하 여백 추가 */
+        }
+    </style>
+    <script>
+        function convertDDLToInsert() {
+            let ddlInput = document.getElementById('ddlInput').value;
+            let layoutInput = document.getElementById('layoutInput').value; // 사용자 추가 입력 받기
+            let lines = ddlInput.split('\n');
+            let currentTable1 = "tit_layout_column";
+			let currentTable2 = "tit_layout_mstr";
+            let primaryKeyOrder = {};
+            let inserts = [];
+			let inserts_mst = [];
+            let sequence = 1;
+            inserts_mst.push(`INSERT INTO ${currentTable2} (layout_id , layout_nm , layout_ver , sc_layout_id , sc_layout_ver , rm , delete_at , last_stre_ennc , regist_dt , register_id , modf_dt , modfer_id ) VALUES ('${layoutInput}' , '레이아웃명' , '1' , '' , '' , '비고' , 'N' , 'Y' , CURRENT_TIMESTAMP , 'admin' , CURRENT_TIMESTAMP , 'admin');`);
+
+            lines.forEach(function(line) {
+                let trimmedLine = line.trim();
+                if (trimmedLine.toUpperCase().startsWith('CREATE TABLE')) {
+                currentTable = trimmedLine.split(/\s+/)[2];
+                } else if (trimmedLine.toUpperCase().includes('PRIMARY KEY')) {
+                    let pkDefinition = trimmedLine.substring(trimmedLine.indexOf('(') + 1, trimmedLine.indexOf(')')).split(',');
+                    pkDefinition.forEach(function(pkColumn, idx) {
+                        primaryKeyOrder[pkColumn.trim()] = idx + 1;
+                    });
+                }
+            });
+
+            lines.forEach(function(line) {
+                let trimmedLine = line.trim();
+                if (trimmedLine.toUpperCase().startsWith('CREATE TABLE')) {
+                    sequence = 1;
+                } else if (trimmedLine && !trimmedLine.startsWith('--') && !trimmedLine.toUpperCase().includes('PRIMARY KEY')) {
+                    let parts = trimmedLine.split(/\s+/);
+                    if (parts.length >= 2) {
+                        let columnName = parts[0].replace(',', '');
+                        let dataTypeAndLength = parts[1];
+						let dataType = dataTypeAndLength.split('(')[0]; // 데이터 타입 추출
+						let length = '';
+						let decimal = '';
+
+						// 길이와 소수점 자리 분리
+						if (dataTypeAndLength.includes('(')) {
+							let matches = dataTypeAndLength.match(/\((\d+)(,(\d+))?\)/);
+							if (matches) {
+								length = matches[1]; // 전체 길이
+								decimal = matches[3] || ''; // 소수점 자리, 없으면 빈 문자열
+							}
+						}
+					
+                        let isNullable = trimmedLine.toUpperCase().includes('NOT NULL') ? 'N' : 'Y';
+                        let isPrimaryKey = primaryKeyOrder.hasOwnProperty(columnName) ? 'Y' : 'N';
+                        let pkSequence = isPrimaryKey ? primaryKeyOrder[columnName] : '';
+
+						let layout_id = layoutInput;
+						let layout_ver = '1';
+						let column_sn = sequence;
+						let column_nm = columnName;
+						let column_korean_nm = ' ';
+						let column_eng_nm = ' ';
+						let column_ty_value = dataType;
+						let column_lt = length;
+						let column_dcmlpoint_lt = decimal;
+						let column_srn = sequence;
+						let column_pk_at = isPrimaryKey;
+						let null_psbl_at = isNullable;
+						let iftlg_cd_id = ' ';
+						let casting_value = ' ';
+						let regist_dt = 'CURRENT_TIMESTAMP';
+						let register_id = 'admin';
+						let modf_dt = 'CURRENT_TIMESTAMP';
+						let modfer_id = 'admin';
+						
+                        inserts.push(`INSERT INTO ${currentTable1} (layout_id, layout_ver, column_sn, column_nm, column_korean_nm, column_eng_nm, column_ty_value, column_lt, column_dcmlpoint_lt, column_srn, column_pk_at, null_psbl_at, iftlg_cd_id, casting_value, regist_dt, register_id, modf_dt, modfer_id) VALUES ('${layoutInput}', '1', ${sequence}, '${columnName}', ' ', ' ', '${dataType}', '${length}', ${column_dcmlpoint_lt}, '${sequence}', '${isPrimaryKey}', '${isNullable}', ' ', ' ', CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin');`);
+                        sequence++;
+                    }
+                }
+            });
+
+            document.getElementById('insertOutput').value = inserts.join('\n');
+            document.getElementById('insertOutputmst').value = inserts_mst.join('\n');
+        }
+        
+        function clearDDLInput() {
+            document.getElementById('ddlInput').value = ''; // DDL 입력창을 비웁니다.
+        }
+    </script>
+</head>
+<body>
+    <h2>DDL to INSERT Statement Converter</h2>
+	<button id="clearButton" onclick="clearDDLInput()">Clear</button><br>
+    <textarea id="ddlInput" placeholder="Enter DDL here...">
+CREATE TABLE public.tit_layout_column (
+ layout_id varchar(10) NOT NULL,S
+ column_dcmlpoint_lt numeric(10,5) NULL,
+ layout_ver varchar(10) NOT NULL,S
+ rm varchar(1000) NULL,
+ iftlg_cd_id varchar(50) NULL,
+ CONSTRAINT layout_column_pk PRIMARY KEY (layout_id, layout_ver, column_sn)
+);
+    </textarea><br>
+    <input type="text" id="layoutInput" placeholder="Enter 레이아웃명 ..."><br>
+    <button onclick="convertDDLToInsert()">Convert to INSERT Statements</button><br>
+    <textarea id="insertOutput" style="width:100%;" placeholder="Resulting list ..."></textarea>
+	<textarea id="insertOutputmst" style="width:100%;" placeholder="Resulting Mst ..."></textarea>
+</body>
+</html>

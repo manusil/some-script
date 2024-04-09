@@ -1,0 +1,13 @@
+INSERT INTO TIT_LAYOUT_MSTR (LAYOUT_ID , LAYOUT_NM , LAYOUT_VER , SC_LAYOUT_ID , SC_LAYOUT_VER , RM , DELETE_AT , LAST_STRE_ENNC , REGIST_DT , REGISTER_ID , MODF_DT , MODFER_ID )
+		VALUES ('LAY_000007'
+		, '연습2'
+		, '1'
+		, ''
+		, ''
+		, ''
+		, 'N'
+		, 'Y'
+		, CURRENT_TIMESTAMP
+		, 'admin'
+		, CURRENT_TIMESTAMP
+		, 'admin' );

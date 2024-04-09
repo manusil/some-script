@@ -2,7 +2,7 @@ SELECT 'INSERT INTO your_target_table (LAYOUT_ID, LAYOUT_VER, COLUMN_SN, COLUMN_
     || 'LAY_000016' || ''', ''' 
     || '1' || ''', ' 
     || ROWNUM || ', ''' 
-    || COLUMN_NAME || ''', ''' 
+    || USER_TAB_COLUMNS.COLUMN_NAME || ''', ''' 
     || NVL(COMMENTS, 'NULL') || ''', ''' 
     || '''' || ', ''' 
     || DATA_TYPE || ''', ''' 
@@ -13,11 +13,11 @@ SELECT 'INSERT INTO your_target_table (LAYOUT_ID, LAYOUT_VER, COLUMN_SN, COLUMN_
     || DECODE(NULLABLE, 'Y', 'N', 'Y') || ''', ''' 
     || NULL || ''', ''' 
     || '''' || ', ' 
-    || 'SYSDATE' || ', ''' 
+    || 'CURRENT_TIMESTAMP' || ', ''' 
     || 'admin' || ''', ' 
-    || 'SYSDATE' || ', ''' 
-    || 'admin' || ''')'
+    || 'CURRENT_TIMESTAMP' || ', ''' 
+    || 'admin' || ''');'
 FROM USER_TAB_COLUMNS
 LEFT JOIN USER_COL_COMMENTS ON USER_TAB_COLUMNS.TABLE_NAME = USER_COL_COMMENTS.TABLE_NAME 
     AND USER_TAB_COLUMNS.COLUMN_NAME = USER_COL_COMMENTS.COLUMN_NAME
-WHERE USER_TAB_COLUMNS.TABLE_NAME = 'TIT_LAYOUT_COLUMN';
+WHERE USER_TAB_COLUMNS.TABLE_NAME = 'CONTACTS';
